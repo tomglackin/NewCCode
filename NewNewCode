@@ -21,253 +21,209 @@ bool Spread(int x, int y);
 
 int main(void)
 {
+	setvbuf(stdout, NULL, _IONBF, 0);
+	setvbuf(stderr, NULL, _IONBF, 0);
+	//FILE * Immunization;
+	//Immunization= fopen("Immunization.xls","w");
 
 
-					setvbuf(stdout, NULL, _IONBF, 0);
-					setvbuf(stderr, NULL, _IONBF, 0);
+	srand(time(0)); //allows for the random arrays to be produced for each separate simulation
+	int SIM;
 
+	// fraction of population immune
+	double probIM; // probability that a member of the population is Immune
+	double PerImmune, PerInfected, PerVul; // percentages to be exported
+	double PopSize, ImmuneTotal; // defining the size of the population
+	double FractImmune, FractInfected, FractVul; // Fractions to be exported
 
-					//FILE * Immunization;
-					//Immunization= fopen("Immunization.xls","w");
-
-
-
-					srand(time(0)); //allows for the random arrays to be produced for each separate simulation
-					int SIM;
-
-
-					// fraction of population immune
-					double probIM; // probability that a member of the population is Immune
-					double PerImmune, PerInfected, PerVul; // percentages to be exported
-					double PopSize, ImmuneTotal; // defining the size of the population
-					double FractImmune, FractInfected, FractVul; // Fractions to be exported
-
-
-					probIM = 0.46136;
-					PopSize = 625.0;
-					ImmuneTotal = ceil((probIM) * (PopSize));
-					printf("probIM:%g\nImmuneTotal:%g\n\n\n", probIM, ImmuneTotal);
+	probIM = 0.46136;
+	PopSize = 625.0;
+	ImmuneTotal = ceil((probIM) * (PopSize));
+	printf("probIM:%g\nImmuneTotal:%g\n\n\n", probIM, ImmuneTotal);
 
 
 
-					for (SIM = 0; SIM < 50; SIM++) // for loop which will produce 50 Simulations of the Spread
-					{
+	for (SIM = 0; SIM < 50; SIM++) // for loop which will produce 50 Simulations of the Spread
+	{
+		int i, j, num; // terms used for defining the matrix and random location generation
+		int na, nb, nc; // terms used within various loops within the simulation
+		int counter1, counter8, counter0; // terms used for counting the amount of Infected:1,Immune:8,Vulnerable:0
+
+		//setting up frame work for spread; 27x27 matrix with outer edges set as immune "8"
+		for (i = 0; i < 27; i++)
+		{
+			for (j = 0; j < 27; j++)
+			{
+				population[i][j] = immune ;
+			}
+		}
 
 
-								int i, j, num; // terms used for defining the matrix and random location generation
-								int na, nb, nc; // terms used within various loops within the simulation
-								int counter1, counter8, counter0; // terms used for counting the amount of Infected:1,Immune:8,Vulnerable:0
-
-
-
-
-								//setting up frame work for spread; 27x27 matrix with outer edges set as immune "8"
-								for (i = 0; i < 27; i++)
-								{
-										for (j = 0; j < 27; j++)
-										{
-
-											population[i][j] = immune ;
-
-										}
-								}
-
-
-								//setting up 25X25 matrix, P[i][j], of random elements 0, which can be considered as vulnerable, spans from array coord 1-26
-								for (i = 1; i < 26; i++)
-								{
-										for (j = 1; j < 26; j++)
-										{
-
-											num = rand() % 1; //once working set to srand this alllows for different arrays on every build
+		//setting up 25X25 matrix, P[i][j], of random elements 0, which can be considered as vulnerable, spans from array coord 1-26
+		for (i = 1; i < 26; i++)
+		{
+			for (j = 1; j < 26; j++)
+			{
+				num = rand() % 1; //once working set to srand this alllows for different arrays on every build
 											population[i][j] = num;
-
-										}
-								}
-
-
-								// selecting 289 immune cells
-								for (na = 0; na < 290; na++)
-								{
-
-									int x;
-									int y;
-
-									x = (rand() % 26);
-									y = (rand() % 26);
-
-										if (x ==0)
-											{
-												x++;
-											}
-
-										if (y == 0)
-											{
-												y++;
-											}
-
-										// Only set element to immune if it has not been set before
-										if (population[x][y] != immune )
-											{
-												population[x][y] = immune;
-											}
-										else //if element has already been set to immune, then we need to set our loop counter back 1 to retry for a new position
-											{
-												na--;
-											}
-								}
+			}
+		}
 
 
-								//The following code will allow us to randomly
-								//select our patient zero
-								int patientZeroX;
-								int patientZeroY;
+		// selecting 289 immune cells
+		for (na = 0; na < 290; na++)
+		{
+			int x;
+			int y;
 
-								patientZeroX = rand() % 26;
-								patientZeroY = rand() % 26;
+			x = (rand() % 26);
+			y = (rand() % 26);
 
-								//Make sure the patient isn't in row or coloumn 0
-								if (patientZeroX == 0)
-									{
-										patientZeroX++;
-									}
+			if (x ==0){
+			   x++;
+			}
 
-								if (patientZeroY == 0)
-									{
-										patientZeroY++;
-									}
+			if (y == 0){
+			   y++;
+			}
+			
+			// Only set element to immune if it has not been set before
+			if (population[x][y] != immune){
+			   population[x][y] = immune;
+			}
+			else{ //if element has already been set to immune, then we need to set our loop counter back 1 to retry for a new position
+			      na--;
+			    }
+		}
 
-								//In order to start off the infection we force our
-								//patient zero to be vulnerable
-								population[patientZeroY][patientZeroX] = vulnerable;
+		//The following code will allow us to randomly
+		//select our patient zero
+		int patientZeroX;
+		int patientZeroY;
+		patientZeroX = rand() % 26;
+		patientZeroY = rand() % 26;
 
-								//Now we start the infection and allow it
-								//to naturally spread
-								Infect(patientZeroX, patientZeroY);
+		//Make sure the patient isn't in row or coloumn 0
+		if (patientZeroX == 0)
+		{
+			patientZeroX++;
+		}
+		if (patientZeroY == 0)
+		{
+			patientZeroY++;
+		}
 
-								counter1 = 0; //infected counter
-								counter8 = 0; //immunity counter
-								counter0 = 0; //vulnerable counter
+		//In order to start off the infection we force our
+		//patient zero to be vulnerable
+		population[patientZeroY][patientZeroX] = vulnerable;
 
-								//extracting the counting values from array
-								for (i = 1; i < 26; i++)
-								{
-									for (j = 1; j < 26; j++)
-									{
+		//Now we start the infection and allow it
+		//to naturally spread
+		Infect(patientZeroX, patientZeroY);
 
-										if (population[i][j] == infected )
-											counter1++;
+		counter1 = 0; //infected counter
+		counter8 = 0; //immunity counter
+		counter0 = 0; //vulnerable counter
 
-									}
-								}
+		//extracting the counting values from array
+		for (i = 1; i < 26; i++)
+		{
+			for (j = 1; j < 26; j++)
+			{
+				if (population[i][j] == infected){
+				   counter1++;
+				   }
+			}
 
-								for (i = 1; i < 26; i++)
-								{
-									for (j = 1; j < 26; j++)
-									{
+			for (i = 1; i < 26; i++)
+			{
+				for (j = 1; j < 26; j++)
+				{
+					if (population[i][j] == immune){
+					counter8++;
+					}
+				}
 
-										if (population[i][j] == immune)
-											counter8++;
-
-									}
-								}
-
-								for (i = 1; i < 26; i++)
-								{
-									for (j = 1; j < 26; j++)
-									{
-
-										if (population[i][j] == vulnerable )
-											counter0++;
-
-									}
-								}
-
-
-								FractInfected = (counter1 / 625.0); // Percentage of Population Infected
-								FractImmune = (counter8 / 625.); // Percentage Immune
-								FractVul = (counter0 / 625.0); // Percentage Vulnerable
+				for (i = 1; i < 26; i++)
+				{
+					for (j = 1; j < 26; j++)
+					{
+						if (population[i][j] == vulnerable )
+						counter0++;
+					}
+				}
 
 
-								//general for-loop to print the inner 25X25 matrix
-				/*
-								for (i = 1; i < 26; i++)
-								{
-									for (j = 1; j < 26; j++)
-									{
-										printf("%d \t ", population[i][j]);
-										if (j == 25)
-											{
-												printf("\n");
-											}
-									}
-								}
-				*/
+				FractInfected = (counter1 / 625.0); // Percentage of Population Infected
+				FractImmune = (counter8 / 625.); // Percentage Immune
+				FractVul = (counter0 / 625.0); // Percentage Vulnerable
+
+
+				//general for-loop to print the inner 25X25 matrix/*
+				for (i = 1; i < 26; i++)
+				{
+				    for (j = 1; j < 26; j++)
+				    {
+				    	printf("%d \t ", population[i][j]);
+					if (j == 25){
+					   printf("\n");
+					   }
+				    }
+				}
+
+				//printing of information/data for the spread of disease
+				printf("patient zero [%d][%d]\n", patientZeroX, patientZeroY);
+				//printf("Number of People Infected:%d\nNumber of People Immune:%d\nNumber of People Vulnerable:%d\n" , counter1, counter8, counter0) ;
+				//printf("Percentage Infected:%g\nPercentage Immune:%g\nPercentage Vulnerable:%g\n\n\n", PerInfected, PerImmune, PerVul);
+				//fprintf(Immunization,"Percentage Infected\t%g\tPercentage Immune\t%g\tPercentage Vulnerable\t%g\t\n",PerInfected, PerImmune, PerVul);
+				//printf("Number of People Immune:%d\n", counter8);
+				printf("Number of People Infected:%d\n\n", counter1);
+				//printf("Number of People Vulnerable:%d\n\n", counter0);
 
 
 
-
-								//printing of information/data for the spread of disease
-								printf("patient zero [%d][%d]\n", patientZeroX, patientZeroY);
-								//printf("Number of People Infected:%d\nNumber of People Immune:%d\nNumber of People Vulnerable:%d\n" , counter1, counter8, counter0) ;
-								//printf("Percentage Infected:%g\nPercentage Immune:%g\nPercentage Vulnerable:%g\n\n\n", PerInfected, PerImmune, PerVul);
-								//fprintf(Immunization,"Percentage Infected\t%g\tPercentage Immune\t%g\tPercentage Vulnerable\t%g\t\n",PerInfected, PerImmune, PerVul);
-								//printf("Number of People Immune:%d\n", counter8);
-								printf("Number of People Infected:%d\n\n", counter1);
-								//printf("Number of People Vulnerable:%d\n\n", counter0);
-
-
-
-Analysis[SIM][0]=FractInfected;
-Analysis[SIM][1]=FractVul;
+				Analysis[SIM][0]=FractInfected;
+				Analysis[SIM][1]=FractVul;
 
 				}
 
 	//ANALYSIS
 
 
-					//MEAN
-							double SumForFractInfected=0,SumForFractVul=0;
-							double MeanFractInfected,MeanFractVul;
+	//MEAN
+	double SumForFractInfected=0,SumForFractVul=0;
+	double MeanFractInfected,MeanFractVul;
 
-							for (SIM = 0; SIM < 50; SIM++)
-								{
-									SumForFractInfected=SumForFractInfected+Analysis[SIM][0];
-									SumForFractVul=SumForFractVul+Analysis[SIM][1];
-								}
-
-							MeanFractInfected=(SumForFractInfected/50);
-							MeanFractVul=(SumForFractVul/50);
-
-							printf("Mean Fraction Infected:%g\nMean Fraction Vulnerable:%g\n\n", MeanFractInfected,MeanFractVul);
+	for (SIM = 0; SIM < 50; SIM++(
+	{
+		SumForFractInfected=SumForFractInfected+Analysis[SIM][0];
+		SumForFractVul=SumForFractVul+Analysis[SIM][1];
+	}
+	MeanFractInfected=(SumForFractInfected/50);
+	MeanFractVul=(SumForFractVul/50);
+	printf("Mean Fraction Infected:%g\nMean Fraction Vulnerable:%g\n\n", MeanFractInfected,MeanFractVul);
 
 
-					//Variance
-							double VARSumForFractInfected=0, VARSumForFractVul=0;
-							double VarFractInfected,VarFractVul;
+	//Variance
+	double VARSumForFractInfected=0, VARSumForFractVul=0;
+	double VarFractInfected,VarFractVul;
 
-							for (SIM = 0; SIM < 50; SIM++)
-								{
-									VARSumForFractInfected = VARSumForFractInfected + pow((Analysis[SIM][0] - MeanFractInfected),2);
-									VARSumForFractVul = VARSumForFractVul + pow((Analysis[SIM][1] - MeanFractVul),2);
-								}
+	for (SIM = 0; SIM < 50; SIM++)
+	{
+		VARSumForFractInfected = VARSumForFractInfected + pow((Analysis[SIM][0] - MeanFractInfected),2);
+		VARSumForFractVul = VARSumForFractVul + pow((Analysis[SIM][1] - MeanFractVul),2);
+	}
+	VarFractInfected=(VARSumForFractInfected/50);
+	VarFractVul=(VARSumForFractVul/50);
 
-							VarFractInfected=(VARSumForFractInfected/50);
-							VarFractVul=(VARSumForFractVul/50);
-
-							printf("Variance in Fraction Infected:%g\nVarience in Fraction Vulnerable:%g\n\n", VarFractInfected, VarFractVul);
-
-
-					//Standard Deviation
-									double SD_FractInfected, SD_FractVul;
-
-									SD_FractInfected = sqrt(VarFractInfected);
-									SD_FractVul = sqrt(VarFractVul);
-
-									printf("Standard Deviation in Fraction Infected:%g\nStandard Deviation in Fraction Vulnerable:%g\n",SD_FractInfected, SD_FractVul);
+	printf("Variance in Fraction Infected:%g\nVarience in Fraction Vulnerable:%g\n\n", VarFractInfected, VarFractVul);
 
 
-
+	//Standard Deviation
+	double SD_FractInfected, SD_FractVul;
+	SD_FractInfected = sqrt(VarFractInfected);
+	SD_FractVul = sqrt(VarFractVul);
+	printf("Standard Deviation in Fraction Infected:%g\nStandard Deviation in Fraction Vulnerable:%g\n",SD_FractInfected, SD_FractVul);
 	return EXIT_SUCCESS;
 }
 
